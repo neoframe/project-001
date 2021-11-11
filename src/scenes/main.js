@@ -16,6 +16,7 @@ export default class MainScene extends Scene {
 
   generateWalls () {
     // Randomly generate rectangles in the world
+    // The more the rectangles, the more the performances are impacted
     for (let i = 0; i < 100; i++) {
       const x = Math.Between(0, this.physics.world.bounds.width);
       const y = Math.Between(0, this.physics.world.bounds.height);
