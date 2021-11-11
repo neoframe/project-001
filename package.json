@@ -1,0 +1,36 @@
+{
+  "name": "project-001",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/neoframe/project-001.git",
+  "author": "dackmin <ugo@poool.fr>",
+  "license": "MIT",
+  "scripts": {
+    "serve": "webpack serve --config webpack.config.js"
+  },
+  "dependencies": {
+    "phaser": "3.55.2"
+  },
+  "devDependencies": {
+    "@babel/core": "7.15.8",
+    "@babel/eslint-parser": "7.15.8",
+    "@babel/eslint-plugin": "7.14.5",
+    "@babel/preset-env": "7.15.8",
+    "@poool/eslint-config": "1.5.0",
+    "@poool/eslint-plugin": "1.5.0",
+    "autoprefixer": "10.4.0",
+    "babel-loader": "8.2.3",
+    "css-loader": "6.5.0",
+    "eslint": "7.32.0",
+    "eslint-config-standard": "16.0.3",
+    "eslint-plugin-import": "2.25.2",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "5.1.1",
+    "html-webpack-plugin": "5.4.0",
+    "postcss-loader": "6.2.0",
+    "style-loader": "3.3.1",
+    "webpack": "5.59.1",
+    "webpack-cli": "4.9.1",
+    "webpack-dev-server": "4.3.1"
+  }
+}
