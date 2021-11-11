@@ -1,4 +1,4 @@
-import { Scene, Math } from 'phaser';
+import { Scene, Math, Geom } from 'phaser';
 
 import { ZOOM } from '../utils/settings';
 import Player from '../objects/player';
@@ -21,11 +21,9 @@ export default class MainScene extends Scene {
       const y = Math.Between(0, this.physics.world.bounds.height);
       const w = Math.Between(50, 100);
       const h = Math.Between(50, 100);
-      const rect = this.add.rectangle(
-        x - this.physics.world.bounds.width / 2,
-        y - this.physics.world.bounds.width / 2,
-        w, h, 0x00FF00
-      );
+      const rect = this.add.rectangle(x, y, w, h, 0x00FF00);
+      rect.setDepth(10);
+      rect.setOrigin(0, 0);
       this.physics.add.existing(rect);
       rect.body.immovable = true;
       this.walls.push(rect);
@@ -34,9 +32,15 @@ export default class MainScene extends Scene {
 
   create () {
     this.physics.world.setBounds(0, 0, 2000, 2000);
-    this.add.rectangle(0, 0, 2000, 2000, 0x000000);
+    const worldRect = this.add.rectangle(0, 0, 2000, 2000, 0xcccccc);
+    worldRect.setOrigin(0, 0);
 
     this.generateWalls();
+
+    // Generate lightning
+    this.raycaster = this.raycasterPlugin.createRaycaster({
+      objects: this.walls,
+    });
 
     // Generate keys (arrows + space + enter)
     this.cursors = this.input.keyboard.createCursorKeys();

@@ -9,7 +9,8 @@
     "serve": "webpack serve --config webpack.config.js"
   },
   "dependencies": {
-    "phaser": "3.55.2"
+    "phaser": "3.55.2",
+    "phaser-raycaster": "0.9.4"
   },
   "devDependencies": {
     "@babel/core": "7.15.8",

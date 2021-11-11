@@ -3585,6 +3585,11 @@ path@^0.12.7:
     process "^0.11.1"
     util "^0.10.3"
 
+phaser-raycaster@0.9.4:
+  version "0.9.4"
+  resolved "https://registry.yarnpkg.com/phaser-raycaster/-/phaser-raycaster-0.9.4.tgz#f01111bb82c76128237d1b49ab5308c2d22fbd0e"
+  integrity sha512-VJ9B3vjiHCEOQqJnceLkeYIr5xno5dWWG7DZmsVZ3rnJTa0LdtrXeRzR0G+d0B5MvUR6642ofKtCZMEIi9YRdg==
+
 phaser@3.55.2:
   version "3.55.2"
   resolved "https://registry.yarnpkg.com/phaser/-/phaser-3.55.2.tgz#c1e2e9e70de7085502885e06f46b7eb4bd95e29a"

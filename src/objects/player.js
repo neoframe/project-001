@@ -1,4 +1,4 @@
-import { GameObjects, Physics } from 'phaser';
+import { Display, GameObjects, Math, Physics } from 'phaser';
 
 import { PLAYER_SPEED } from '../utils/settings';
 import heroIdleFront from '../assets/hero-idle-front.png';
@@ -29,7 +29,7 @@ export default class Player extends GameObjects.Sprite {
     this.setTexture('hero-idle-front');
     this.scene.physics.add.existing(this);
     this.scene.add.existing(this);
-    // this.body.setCollideWorldBounds(true);
+    this.body.setCollideWorldBounds(true);
 
     this.light = this.scene.lights.addLight(this.x, this.y, 100);
 
@@ -56,9 +56,46 @@ export default class Player extends GameObjects.Sprite {
       frameRate: 10,
       repeat: -1,
     });
+
+    // Manage lightning
+    this.ray = this.scene.raycaster.createRay();
+    this.ray.autoSlice = true;
+    this.ray.setConeDeg(45);
+
+    // Light masks
+    this.lightMask = this.scene.add
+      .graphics({ fillStyle: { color: 0xffffff, alpha: 0 } });
+    this.lightMask.setDepth(1);
+    this.upperLightMask = new Display.Masks
+      .GeometryMask(this.scene, this.lightMask);
+    this.upperLightMask.setInvertAlpha(true);
+    this.fov = this.scene.add
+      .graphics({ fillStyle: { color: 0x000000, alpha: 0.9 } }).setDepth(2);
+    this.fov.setMask(this.upperLightMask);
+    this.fov.fillRect(0, 0,
+      this.scene.physics.world.bounds.width,
+      this.scene.physics.world.bounds.height);
+    this.setDepth(3);
+  }
+
+  drawLight () {
+    this.scene.input.activePointer.updateWorldPoint(this.scene.cameras.main);
+    this.ray.setOrigin(this.x, this.y);
+    this.ray.setAngle(Math.Angle.Between(
+      this.x,
+      this.y,
+      this.scene.input.activePointer.worldX,
+      this.scene.input.activePointer.worldY,
+    ));
+    const intersections = this.ray.castCone();
+    intersections.push(this.ray.origin);
+    this.lightMask.clear();
+    this.lightMask.fillPoints(intersections);
   }
 
   update () {
+    this.drawLight();
+
     if (this.scene.cursors.left.isDown) {
       this.setFlip(true);
       this.body.setVelocityX(-PLAYER_SPEED);
