@@ -1,4 +1,4 @@
-import { Scene, Math, Geom } from 'phaser';
+import { Scene, Math } from 'phaser';
 
 import { ZOOM } from '../utils/settings';
 import Player from '../objects/player';

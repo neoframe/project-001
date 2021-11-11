@@ -9,7 +9,6 @@ import heroWalkBack from '../assets/hero-walk-back.png';
 import heroWalkSide from '../assets/hero-walk-side.png';
 
 export default class Player extends GameObjects.Sprite {
-
   constructor (scene, ...args) {
     super(scene, ...args);
 
@@ -30,8 +29,6 @@ export default class Player extends GameObjects.Sprite {
     this.scene.physics.add.existing(this);
     this.scene.add.existing(this);
     this.body.setCollideWorldBounds(true);
-
-    this.light = this.scene.lights.addLight(this.x, this.y, 100);
 
     this.scene.anims.create({
       key: 'walk-front',
@@ -57,18 +54,24 @@ export default class Player extends GameObjects.Sprite {
       repeat: -1,
     });
 
-    // Manage lightning
+    // Create the light ray using the scene raycaster
     this.ray = this.scene.raycaster.createRay();
-    this.ray.autoSlice = true;
+    // The more the cone angle, the more the performances will be affected
     this.ray.setConeDeg(45);
 
-    // Light masks
+    // This graphics represents the light (basically it's just an undefined
+    // rectangle, for now)
     this.lightMask = this.scene.add
       .graphics({ fillStyle: { color: 0xffffff, alpha: 0 } });
     this.lightMask.setDepth(1);
+
+    // This is the mask that will be used to cut the light into the ray's cone
     this.upperLightMask = new Display.Masks
       .GeometryMask(this.scene, this.lightMask);
     this.upperLightMask.setInvertAlpha(true);
+
+    // This graphics represents the shadows (another undefined rectangle, black
+    // this time)
     this.fov = this.scene.add
       .graphics({ fillStyle: { color: 0x000000, alpha: 0.9 } }).setDepth(2);
     this.fov.setMask(this.upperLightMask);
@@ -79,23 +82,38 @@ export default class Player extends GameObjects.Sprite {
   }
 
   drawLight () {
+    // Update mouse pointer when cameras moves
+    // This avoids keeping the mouse pointer to the same world position
+    // when the player moves but not the mouse inside the viewport
     this.scene.input.activePointer.updateWorldPoint(this.scene.cameras.main);
-    this.ray.setOrigin(this.x, this.y);
+
+    // Move the light ray beneath the player's body
+    this.ray.setOrigin(
+      this.body.x + this.body.width / 2,
+      this.body.y + this.body.height / 2
+    );
+
+    // Set light angle according to mouse position inside the world
     this.ray.setAngle(Math.Angle.Between(
       this.x,
       this.y,
       this.scene.input.activePointer.worldX,
       this.scene.input.activePointer.worldY,
     ));
+
+    // Gather all the objects that the ray collides with
     const intersections = this.ray.castCone();
+
+    // In cone mode, we need to add the ray's origin to the intersections
+    // to correctly close the mask shape, otherwise everything is fucked
     intersections.push(this.ray.origin);
+
+    // And then we redraw the light according to the new raycasting points
     this.lightMask.clear();
     this.lightMask.fillPoints(intersections);
   }
 
   update () {
-    this.drawLight();
-
     if (this.scene.cursors.left.isDown) {
       this.setFlip(true);
       this.body.setVelocityX(-PLAYER_SPEED);
@@ -135,5 +153,7 @@ export default class Player extends GameObjects.Sprite {
           this.setTexture('hero-idle-front');
       }
     }
+
+    this.drawLight();
   }
 }
