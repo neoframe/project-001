@@ -15,10 +15,6 @@ export default class MainScene extends Scene {
   }
 
   create () {
-    this.physics.world.setBounds(0, 0, 2000, 2000);
-    const worldRect = this.add.rectangle(0, 0, 2000, 2000, 0x42393A);
-    worldRect.setOrigin(0, 0);
-
     // Generate lightning
     this.raycaster = this.raycasterPlugin.createRaycaster({});
 
@@ -32,12 +28,21 @@ export default class MainScene extends Scene {
     // Create player
     this.player.create();
 
+    // Create walls & floors
+    this.dungeon.create();
+
+    // Adjust lightning according to walls
+    const bounds = [
+      0, 0, this.dungeon.map.widthInPixels, this.dungeon.map.heightInPixels,
+    ];
+    this.physics.world.setBounds(...bounds);
+    this.cameras.main.setBounds(...bounds);
+    this.player.setFieldOfView(...bounds);
+    this.raycaster.setBoundingBox(...bounds);
+
     // Add camera
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setZoom(ZOOM);
-
-    // Create walls & floors
-    this.dungeon.create();
 
     // Set collisions between walls & light
     this.raycaster.mapGameObjects(this.dungeon.obstacles, true, {

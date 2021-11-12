@@ -1,6 +1,7 @@
 import RandomDungeon from '@mikewesthad/dungeon';
 
 import tileset from '../assets/tileset.png';
+import { DEBUG } from '../utils/settings';
 
 export default class Dungeon {
   static TILES = {
@@ -70,7 +71,7 @@ export default class Dungeon {
       },
     });
 
-    if (this.scene.debugMode) {
+    if (DEBUG) {
       this.dungeon.drawToConsole();
     }
 

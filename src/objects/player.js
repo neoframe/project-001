@@ -97,6 +97,11 @@ export default class Player extends GameObjects.Sprite {
     this.setTint(0x666666);
   }
 
+  setFieldOfView (x, y, width, height) {
+    this.fov.clear();
+    this.fov.fillRect(x, y, width, height);
+  }
+
   drawLightBeam () {
     // Update mouse pointer when cameras moves
     // This avoids keeping the mouse pointer to the same world position

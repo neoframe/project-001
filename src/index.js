@@ -7,7 +7,7 @@ import './index.css';
 
 const _ = new Game({
   type: AUTO,
-  backgroundColor: 0x000000,
+  backgroundColor: 0x42393A,
   physics: {
     default: 'arcade',
     arcade: {
