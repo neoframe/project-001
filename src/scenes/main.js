@@ -37,7 +37,7 @@ export default class MainScene extends Scene {
 
     // Set collisions between walls & light
     this.raycaster.mapGameObjects(this.dungeon.obstacles, true, {
-      collisionTiles: [-1],
+      collisionTiles: Dungeon.LIGHT_BLOCKING_TILES,
     });
   }
 

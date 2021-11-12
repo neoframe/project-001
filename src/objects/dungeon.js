@@ -1,5 +1,4 @@
-import RandomDungeon, { Room } from '@mikewesthad/dungeon';
-import { Display } from 'phaser';
+import RandomDungeon from '@mikewesthad/dungeon';
 
 import tileset from '../assets/tileset.png';
 
@@ -32,6 +31,22 @@ export default class Dungeon {
       BOTTOM_LEFT: 0,
     },
   };
+
+  static LIGHT_BLOCKING_TILES = [
+    Dungeon.TILES.LEFT_WALL,
+    Dungeon.TILES.RIGHT_WALL,
+    Dungeon.TILES.BOTTOM_WALL,
+    Dungeon.TILES.DOOR.TOP_LEFT,
+    Dungeon.TILES.DOOR.TOP_RIGHT,
+    Dungeon.TILES.DOOR.BOTTOM_LEFT,
+    Dungeon.TILES.DOOR.BOTTOM_RIGHT,
+    Dungeon.TILES.GROUND,
+    Dungeon.TILES.TOP_LEFT_WALL,
+    Dungeon.TILES.TOP_RIGHT_WALL,
+    Dungeon.TILES.BOTTOM_RIGHT_WALL,
+    Dungeon.TILES.BOTTOM_LEFT_WALL,
+    Dungeon.TILES.TOP_UPPER_WALL,
+  ]
 
   constructor (scene, player) {
     this.scene = scene;
@@ -133,6 +148,6 @@ export default class Dungeon {
     this.player.x = this.map.widthInPixels / 2;
     this.player.y = this.map.heightInPixels / 2;
 
-    this.obstacles = [wallsLayer];
+    this.obstacles = [wallsLayer, floorLayer];
   }
 }
