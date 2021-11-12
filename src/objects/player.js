@@ -133,19 +133,19 @@ export default class Player extends GameObjects.Sprite {
   }
 
   update () {
-    if (this.scene.cursors.left.isDown) {
+    if (this.scene.cursors.left.isDown || this.scene.cursors.q.isDown) {
       this.setFlip(true);
       this.body.setVelocityX(-PLAYER_SPEED);
-    } else if (this.scene.cursors.right.isDown) {
+    } else if (this.scene.cursors.right.isDown || this.scene.cursors.d.isDown) {
       this.setFlip(false);
       this.body.setVelocityX(PLAYER_SPEED);
     } else {
       this.body.setVelocityX(0);
     }
 
-    if (this.scene.cursors.up.isDown) {
+    if (this.scene.cursors.up.isDown || this.scene.cursors.z.isDown) {
       this.body.setVelocityY(-PLAYER_SPEED);
-    } else if (this.scene.cursors.down.isDown) {
+    } else if (this.scene.cursors.down.isDown || this.scene.cursors.s.isDown) {
       this.body.setVelocityY(PLAYER_SPEED);
     } else {
       this.body.setVelocityY(0);

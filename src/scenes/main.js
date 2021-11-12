@@ -1,6 +1,6 @@
-import { Scene, Math } from 'phaser';
+import { Scene, Input } from 'phaser';
 
-import { DEBUG, ZOOM } from '../utils/settings';
+import { ZOOM } from '../utils/settings';
 import Player from '../objects/player';
 import Dungeon from '../objects/dungeon';
 
@@ -22,8 +22,12 @@ export default class MainScene extends Scene {
     // Generate lightning
     this.raycaster = this.raycasterPlugin.createRaycaster({});
 
-    // Generate keys (arrows + space + enter)
+    // Generate keys (arrows + space + enter + ZQSD)
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.cursors.z = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.Z);
+    this.cursors.q = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.Q);
+    this.cursors.s = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.S);
+    this.cursors.d = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.D);
 
     // Create player
     this.player.create();
