@@ -76,9 +76,13 @@ export default class Dungeon {
 
     const tileset = this.map
       .addTilesetImage('tileset', 'tileset', 32, 32, 0, 0);
-    const floorLayer = this.map.createBlankLayer('floor', tileset);
-    const wallsLayer = this.map.createBlankLayer('walls', tileset);
-    floorLayer.fill(Dungeon.TILES.GROUND);
+    const floorLayer = this.map
+      .createBlankLayer('floor', tileset)
+      .setPipeline('Light2D')
+      .fill(Dungeon.TILES.GROUND);
+    const wallsLayer = this.map
+      .createBlankLayer('walls', tileset)
+      .setPipeline('Light2D');
 
     this.dungeon.rooms.forEach(room => {
       const { x, y, width, height, left, right, top, bottom } = room;

@@ -1,6 +1,6 @@
 import { Display, GameObjects, Math, Physics } from 'phaser';
 
-import { DEBUG, PLAYER_SPEED } from '../utils/settings';
+import { DEBUG, PLAYER_LIGHT_CONE_ANGLE, PLAYER_LIGHT_MAX_DISTANCE, PLAYER_SPEED } from '../utils/settings';
 import heroIdleFront from '../assets/hero-idle-front.png';
 import heroIdleBack from '../assets/hero-idle-back.png';
 import heroIdleSide from '../assets/hero-idle-side.png';
@@ -59,7 +59,7 @@ export default class Player extends GameObjects.Sprite {
     // Create the light ray using the scene raycaster
     this.ray = this.scene.raycaster.createRay();
     // The more the cone angle, the more the performances will be affected
-    this.ray.setConeDeg(45);
+    this.ray.setConeDeg(PLAYER_LIGHT_CONE_ANGLE);
 
     // This graphics represents the light (basically it's just an undefined
     // rectangle, for now)
@@ -82,9 +82,16 @@ export default class Player extends GameObjects.Sprite {
       this.scene.physics.world.bounds.width,
       this.scene.physics.world.bounds.height);
     this.setDepth(3);
+
+    // Add natural lights following the player
+    this.scene.lights.enable();
+    this.spotlight = this.scene.lights
+      .addLight(0, 0, PLAYER_LIGHT_MAX_DISTANCE, 0xffffff, 1.5);
+    this.setPipeline('Light2D');
+    this.setTint(0x666666);
   }
 
-  drawLight () {
+  drawLightBeam () {
     // Update mouse pointer when cameras moves
     // This avoids keeping the mouse pointer to the same world position
     // when the player moves but not the mouse inside the viewport
@@ -114,6 +121,7 @@ export default class Player extends GameObjects.Sprite {
     // And then we redraw the light according to the new raycasting points
     this.lightMask.clear();
     this.lightMask.fillPoints(intersections);
+    this.lightMask.setPipeline('Light2D');
   }
 
   update () {
@@ -157,6 +165,7 @@ export default class Player extends GameObjects.Sprite {
       }
     }
 
-    this.drawLight();
+    this.spotlight.setPosition(this.x, this.y);
+    this.drawLightBeam();
   }
 }
