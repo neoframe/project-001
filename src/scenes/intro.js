@@ -14,7 +14,7 @@ export default class IntroScene extends Scene {
   create () {
     this.logo = this.add.image(
       this.cameras.main.centerX, this.cameras.main.centerY, 'logo'
-    ).setOrigin(1, 0.5).setAlpha(0);
+    ).setOrigin(0.5).setAlpha(0);
 
     this.input.keyboard.on('keyup', () => {
       this.scene.start('MenuScene');

@@ -13,12 +13,8 @@ export default class MenuScene extends Scene {
 
   create () {
     this.logo = this.add.image(
-      this.cameras.main.centerX, this.cameras.main.centerY, 'game-logo');
-    this.logo.setPosition(
-      this.cameras.main.centerX - this.logo.width / 2,
-      this.cameras.main.centerY - this.logo.height / 2 - 50
-    );
-    this.logo.setScale(4);
+      this.cameras.main.centerX, this.cameras.main.centerY, 'game-logo'
+    ).setOrigin(0.5).setScale(4);
 
     this.input.keyboard.on('keyup', () => {
       this.scene.start('MainScene');
@@ -26,9 +22,7 @@ export default class MenuScene extends Scene {
   }
 
   update () {
-    this.logo.setPosition(
-      this.cameras.main.centerX - this.logo.width / 2,
-      this.cameras.main.centerY - this.logo.height / 2 - 50
-    );
+    this.logo
+      .setPosition(this.cameras.main.centerX, this.cameras.main.centerY - 50);
   }
 }
