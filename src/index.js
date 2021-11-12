@@ -1,7 +1,7 @@
 import { Game, Scale, AUTO } from 'phaser';
 import Raycaster from 'phaser-raycaster';
 
-import { DEBUG } from './utils/settings';
+import { DEBUG, FPS } from './utils/settings';
 import Intro from './scenes/intro';
 import Menu from './scenes/menu';
 import Main from './scenes/main';
@@ -19,6 +19,9 @@ const _ = new Game({
         debugShowBody: true,
       } : {}),
     },
+  },
+  fps: {
+    target: FPS,
   },
   scale: {
     mode: Scale.RESIZE,

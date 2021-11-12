@@ -1,4 +1,4 @@
-import { Display, GameObjects, Math, Physics } from 'phaser';
+import { Display, GameObjects, Math as PMath, Physics } from 'phaser';
 
 import {
   DEBUG,
@@ -7,58 +7,76 @@ import {
   PLAYER_LIGHT_MAX_DISTANCE,
   PLAYER_SPEED,
 } from '../utils/settings';
-import heroIdleFront from '../assets/hero-idle-front.png';
-import heroIdleBack from '../assets/hero-idle-back.png';
-import heroIdleSide from '../assets/hero-idle-side.png';
-import heroWalkFront from '../assets/hero-walk-front.png';
-import heroWalkBack from '../assets/hero-walk-back.png';
-import heroWalkSide from '../assets/hero-walk-side.png';
+import charset from '../assets/charset.png';
 
 export default class Player extends GameObjects.Sprite {
+  static FRAMES = {
+    IDLE: {
+      FRONT: 1,
+      BACK: 10,
+      LEFT: 4,
+      RIGHT: 7,
+    },
+    WALKING: {
+      FRONT: [0, 1, 2],
+      BACK: [9, 10, 11],
+      LEFT: [3, 4, 5],
+      RIGHT: [6, 7, 8],
+    },
+  };
+
+  pointerAngle = 0;
+  ray = null;
+  lightMask = null;
+  upperLightMask = null;
+  fov = null;
+  spotlight = null;
+
   constructor (scene, ...args) {
     super(scene, ...args);
 
-    scene.load.image('hero-idle-front', heroIdleFront);
-    scene.load.image('hero-idle-back', heroIdleBack);
-    scene.load.image('hero-idle-side', heroIdleSide);
-
-    scene.load.spritesheet('hero-walk-front', heroWalkFront,
-      { frameWidth: 32, frameHeight: 32 });
-    scene.load.spritesheet('hero-walk-back', heroWalkBack,
-      { frameWidth: 32, frameHeight: 32 });
-    scene.load.spritesheet('hero-walk-side', heroWalkSide,
-      { frameWidth: 32, frameHeight: 32 });
+    scene.load
+      .spritesheet('charset', charset, { frameWidth: 32, frameHeight: 48 });
   }
 
   create () {
-    this.setTexture('hero-idle-front');
+    this.setTexture('charset', Player.FRAMES.IDLE.FRONT);
     this.scene.physics.add.existing(this);
     this.scene.add.existing(this);
+    this.setScale(0.75);
     this.body.setCollideWorldBounds(true);
-    this.body.setSize(16, 22);
-    this.body.setOffset(8, 8);
+    this.body.setSize(14, 25);
+    this.body.setOffset(8, 20);
 
     this.scene.anims.create({
       key: 'walk-front',
-      frames: this.scene.anims
-        .generateFrameNumbers('hero-walk-front', { start: 0, end: 5 }),
-      frameRate: 10,
+      frames: this.anims.generateFrameNumbers('charset',
+        { frames: Player.FRAMES.WALKING.FRONT }),
+      frameRate: 6,
       repeat: -1,
     });
 
     this.scene.anims.create({
       key: 'walk-back',
-      frames: this.scene.anims
-        .generateFrameNumbers('hero-walk-back', { start: 0, end: 5 }),
-      frameRate: 10,
+      frames: this.anims.generateFrameNumbers('charset',
+        { frames: Player.FRAMES.WALKING.BACK }),
+      frameRate: 6,
       repeat: -1,
     });
 
     this.scene.anims.create({
-      key: 'walk-side',
-      frames: this.scene.anims
-        .generateFrameNumbers('hero-walk-side', { start: 0, end: 5 }),
-      frameRate: 10,
+      key: 'walk-left',
+      frames: this.anims.generateFrameNumbers('charset',
+        { frames: Player.FRAMES.WALKING.LEFT }),
+      frameRate: 6,
+      repeat: -1,
+    });
+
+    this.scene.anims.create({
+      key: 'walk-right',
+      frames: this.anims.generateFrameNumbers('charset',
+        { frames: Player.FRAMES.WALKING.RIGHT }),
+      frameRate: 6,
       repeat: -1,
     });
 
@@ -78,6 +96,9 @@ export default class Player extends GameObjects.Sprite {
       .GeometryMask(this.scene, this.lightMask);
     this.upperLightMask.setInvertAlpha(true);
 
+    // Add natural lights following the player
+    this.createSpotLight();
+
     // This graphics represents the shadows (another undefined rectangle, black
     // this time)
     this.fov = this.scene.add.graphics({
@@ -87,9 +108,11 @@ export default class Player extends GameObjects.Sprite {
     this.fov.fillRect(0, 0,
       this.scene.physics.world.bounds.width,
       this.scene.physics.world.bounds.height);
-    this.setDepth(3);
 
-    // Add natural lights following the player
+    this.setDepth(3);
+  }
+
+  createSpotLight () {
     this.scene.lights.enable();
     this.spotlight = this.scene.lights
       .addLight(0, 0, DEBUG ? 10000 : PLAYER_LIGHT_MAX_DISTANCE, 0xffffff, 1.5);
@@ -115,12 +138,7 @@ export default class Player extends GameObjects.Sprite {
     );
 
     // Set light angle according to mouse position inside the world
-    this.ray.setAngle(Math.Angle.Between(
-      this.x,
-      this.y,
-      this.scene.input.activePointer.worldX,
-      this.scene.input.activePointer.worldY,
-    ));
+    this.ray.setAngle(this.pointerAngle);
 
     // Gather all the objects that the ray collides with
     const intersections = LIGHT_MODE === 'circle'
@@ -137,9 +155,8 @@ export default class Player extends GameObjects.Sprite {
     this.lightMask.setPipeline('Light2D');
   }
 
-  update () {
+  move () {
     if (this.scene.cursors.left.isDown || this.scene.cursors.q.isDown) {
-      this.setFlip(true);
       this.body.setVelocityX(-PLAYER_SPEED);
     } else if (this.scene.cursors.right.isDown || this.scene.cursors.d.isDown) {
       this.setFlip(false);
@@ -155,29 +172,57 @@ export default class Player extends GameObjects.Sprite {
     } else {
       this.body.setVelocityY(0);
     }
+  }
 
-    if (this.body.velocity.x !== 0) {
-      this.anims.play('walk-side', true);
-    } else if (this.body.velocity.y < 0) {
-      this.anims.play('walk-back', true);
-    } else if (this.body.velocity.y > 0) {
-      this.anims.play('walk-front', true);
-    }
+  determinePointerAngle () {
+    this.pointerAngle = PMath.Angle.Between(
+      this.x,
+      this.y,
+      this.scene.input.activePointer.worldX,
+      this.scene.input.activePointer.worldY,
+    );
+    this.pointerAngleDeg = Math.round(PMath.RadToDeg(this.pointerAngle));
+  }
 
-    if (this.body.velocity.x === 0 && this.body.velocity.y === 0) {
-      switch (this.body.facing) {
-        case Physics.Arcade.FACING_LEFT:
-        case Physics.Arcade.FACING_RIGHT:
-          this.setTexture('hero-idle-side');
-          break;
-        case Physics.Arcade.FACING_UP:
-          this.setTexture('hero-idle-back');
-          break;
-        default:
-          this.setTexture('hero-idle-front');
+  isMoving () {
+    return this.body.velocity.x !== 0 || this.body.velocity.y !== 0;
+  }
+
+  setDirection () {
+    if (this.pointerAngleDeg >= -45 && this.pointerAngleDeg <= 45) {
+      if (this.isMoving()) {
+        this.anims.play('walk-right', true);
+      } else {
+        this.setFrame(Player.FRAMES.IDLE.RIGHT);
+      }
+    } else if (this.pointerAngleDeg >= 45 && this.pointerAngleDeg <= 135) {
+      if (this.isMoving()) {
+        this.anims.play('walk-front', true);
+      } else {
+        this.setFrame(Player.FRAMES.IDLE.FRONT);
+      }
+    } else if (
+      (this.pointerAngleDeg >= 135 && this.pointerAngleDeg <= 180) ||
+      (this.pointerAngleDeg >= -180 && this.pointerAngleDeg <= -135)
+    ) {
+      if (this.isMoving()) {
+        this.anims.play('walk-left', true);
+      } else {
+        this.setFrame(Player.FRAMES.IDLE.LEFT);
+      }
+    } else if (this.pointerAngleDeg >= -135 && this.pointerAngleDeg <= -45) {
+      if (this.isMoving()) {
+        this.anims.play('walk-back', true);
+      } else {
+        this.setFrame(Player.FRAMES.IDLE.BACK);
       }
     }
+  }
 
+  update () {
+    this.move();
+    this.determinePointerAngle();
+    this.setDirection();
     this.spotlight.setPosition(this.x, this.y);
     this.drawLightBeam();
   }
