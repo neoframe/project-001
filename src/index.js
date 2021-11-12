@@ -2,12 +2,13 @@ import { Game, Scale, AUTO } from 'phaser';
 import Raycaster from 'phaser-raycaster';
 
 import { DEBUG } from './utils/settings';
+import Intro from './scenes/intro';
 import Main from './scenes/main';
 import './index.css';
 
 const _ = new Game({
   type: AUTO,
-  backgroundColor: 0x42393A,
+  backgroundColor: 0x000000,
   physics: {
     default: 'arcade',
     arcade: {
@@ -23,7 +24,7 @@ const _ = new Game({
     autoCenter: Scale.CENTER_BOTH,
   },
   pixelArt: true,
-  scene: [Main],
+  scene: [Intro, Main],
   plugins: {
     scene: [
       { key: 'raycaster', plugin: Raycaster, mapping: 'raycasterPlugin' },
