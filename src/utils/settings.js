@@ -1,3 +1,5 @@
+export const DEBUG = false;
+
 export const FPS = 60;
 export const ZOOM = 2;
 

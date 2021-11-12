@@ -1,6 +1,6 @@
 import { Display, GameObjects, Math, Physics } from 'phaser';
 
-import { PLAYER_SPEED } from '../utils/settings';
+import { DEBUG, PLAYER_SPEED } from '../utils/settings';
 import heroIdleFront from '../assets/hero-idle-front.png';
 import heroIdleBack from '../assets/hero-idle-back.png';
 import heroIdleSide from '../assets/hero-idle-side.png';
@@ -29,6 +29,8 @@ export default class Player extends GameObjects.Sprite {
     this.scene.physics.add.existing(this);
     this.scene.add.existing(this);
     this.body.setCollideWorldBounds(true);
+    this.body.setSize(16, 22);
+    this.body.setOffset(8, 8);
 
     this.scene.anims.create({
       key: 'walk-front',
@@ -72,8 +74,9 @@ export default class Player extends GameObjects.Sprite {
 
     // This graphics represents the shadows (another undefined rectangle, black
     // this time)
-    this.fov = this.scene.add
-      .graphics({ fillStyle: { color: 0x000000, alpha: 0.9 } }).setDepth(2);
+    this.fov = this.scene.add.graphics({
+      fillStyle: { color: 0x000000, alpha: DEBUG ? 0.2 : 0.85 },
+    }).setDepth(2);
     this.fov.setMask(this.upperLightMask);
     this.fov.fillRect(0, 0,
       this.scene.physics.world.bounds.width,

@@ -1,8 +1,8 @@
 import { Game, Scale, AUTO } from 'phaser';
 import Raycaster from 'phaser-raycaster';
 
+import { DEBUG } from './utils/settings';
 import Main from './scenes/main';
-
 import './index.css';
 
 const _ = new Game({
@@ -12,8 +12,10 @@ const _ = new Game({
     default: 'arcade',
     arcade: {
       gravity: { x: 0, y: 0 },
-      // debug: true,
-      // debugShowBody: true,
+      ...(DEBUG ? {
+        debug: true,
+        debugShowBody: true,
+      } : {}),
     },
   },
   scale: {
