@@ -1,6 +1,12 @@
 import { Display, GameObjects, Math, Physics } from 'phaser';
 
-import { DEBUG, PLAYER_LIGHT_CONE_ANGLE, PLAYER_LIGHT_MAX_DISTANCE, PLAYER_SPEED } from '../utils/settings';
+import {
+  DEBUG,
+  LIGHT_MODE,
+  PLAYER_LIGHT_CONE_ANGLE,
+  PLAYER_LIGHT_MAX_DISTANCE,
+  PLAYER_SPEED,
+} from '../utils/settings';
 import heroIdleFront from '../assets/hero-idle-front.png';
 import heroIdleBack from '../assets/hero-idle-back.png';
 import heroIdleSide from '../assets/hero-idle-side.png';
@@ -86,7 +92,7 @@ export default class Player extends GameObjects.Sprite {
     // Add natural lights following the player
     this.scene.lights.enable();
     this.spotlight = this.scene.lights
-      .addLight(0, 0, PLAYER_LIGHT_MAX_DISTANCE, 0xffffff, 1.5);
+      .addLight(0, 0, DEBUG ? 10000 : PLAYER_LIGHT_MAX_DISTANCE, 0xffffff, 1.5);
     this.setPipeline('Light2D');
     this.setTint(0x666666);
   }
@@ -112,11 +118,13 @@ export default class Player extends GameObjects.Sprite {
     ));
 
     // Gather all the objects that the ray collides with
-    const intersections = this.ray.castCone();
+    const intersections = LIGHT_MODE === 'circle'
+      ? this.ray.castCircle()
+      : this.ray.castCone();
 
     // In cone mode, we need to add the ray's origin to the intersections
     // to correctly close the mask shape, otherwise everything is fucked
-    intersections.push(this.ray.origin);
+    LIGHT_MODE !== 'circle' && intersections.push(this.ray.origin);
 
     // And then we redraw the light according to the new raycasting points
     this.lightMask.clear();
