@@ -1,0 +1,10 @@
+@font-face {
+  font-family: 'WayfarersToyBox';
+  src: url('./assets/fonts/wayfarerstoybox.eot');
+  src: url('./assets/fonts/wayfarerstoybox.eot?#iefix') format('embedded-opentype'),
+       url('./assets/fonts/wayfarerstoybox.woff2') format('woff2'),
+       url('./assets/fonts/wayfarerstoybox.woff') format('woff'),
+       url('./assets/fonts/wayfarerstoybox.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
