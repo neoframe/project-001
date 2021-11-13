@@ -8,8 +8,8 @@ import tileset from '../assets/tileset.png';
 export default class MenuScene extends Scene {
   selected = 0;
   menuItems = [
-    { text: 'play', action: () => { this.scene.start('MainScene'); } },
-    { text: 'settings', action: () => { this.scene.start('SettingsScene'); } },
+    { text: 'play', action: () => this.scene.start('MainScene') },
+    { text: 'settings', action: () => this.scene.start('SettingsScene') },
   ];
 
   constructor () {
