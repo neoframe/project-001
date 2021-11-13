@@ -5,40 +5,55 @@ import { DEBUG } from '../utils/settings';
 
 export default class Dungeon {
   static TILES = {
-    TOP_LEFT_WALL: 24,
-    TOP_RIGHT_WALL: 25,
-    BOTTOM_RIGHT_WALL: 33,
-    BOTTOM_LEFT_WALL: 32,
-    TOP_UPPER_WALL: 17,
+    TOP_LEFT_WALL: 8,
+    TOP_RIGHT_WALL: 9,
+    BOTTOM_LEFT_WALL: 12,
+    BOTTOM_RIGHT_WALL: 13,
     TOP_WALL: [
-      { index: 3, weight: 4 },
+      { index: 32, weight: 1 },
+      { index: 33, weight: 1 },
+    ],
+    LEFT_WALL: [
+      { index: 43, weight: 20 },
+      { index: 42, weight: 10 },
+      { index: 41, weight: 1 },
+      { index: 40, weight: 1 },
+    ],
+    RIGHT_WALL: [
+      { index: 43, weight: 20 },
+      { index: 42, weight: 10 },
+      { index: 41, weight: 1 },
+      { index: 40, weight: 1 },
+    ],
+    BOTTOM_WALL: [
+      { index: 45, weight: 10 },
+      { index: 44, weight: 20 },
+      { index: 37, weight: 1 },
+      { index: 36, weight: 1 },
+    ],
+    GROUND: 46,
+    FLOOR: [
+      { index: 2, weight: 100 },
+      { index: 0, weight: 1 },
+      { index: 1, weight: 1 },
+      { index: 3, weight: 1 },
       { index: 4, weight: 1 },
       { index: 5, weight: 1 },
       { index: 6, weight: 1 },
-    ],
-    LEFT_WALL: 10,
-    RIGHT_WALL: 8,
-    BOTTOM_WALL: 1,
-    GROUND: 37,
-    FLOOR: [
-      { index: 19, weight: 20 },
-      { index: 20, weight: 1 },
-      { index: 21, weight: 1 },
+      { index: 7, weight: 1 },
     ],
     DOOR: {
-      TOP_LEFT: 16,
-      TOP_RIGHT: 18,
-      BOTTOM_RIGHT: 2,
-      BOTTOM_LEFT: 0,
+      TOP_LEFT: 32,
+      TOP_RIGHT: 33,
+      BOTTOM_LEFT: 8,
+      BOTTOM_RIGHT: 9,
     },
   };
 
   static LIGHT_BLOCKING_TILES = [
-    Dungeon.TILES.LEFT_WALL,
-    Dungeon.TILES.RIGHT_WALL,
-    Dungeon.TILES.BOTTOM_WALL,
-    Dungeon.TILES.DOOR.TOP_LEFT,
-    Dungeon.TILES.DOOR.TOP_RIGHT,
+    ...Dungeon.TILES.LEFT_WALL.map(t => t.index),
+    ...Dungeon.TILES.RIGHT_WALL.map(t => t.index),
+    ...Dungeon.TILES.BOTTOM_WALL.map(t => t.index),
     Dungeon.TILES.DOOR.BOTTOM_LEFT,
     Dungeon.TILES.DOOR.BOTTOM_RIGHT,
     Dungeon.TILES.GROUND,
@@ -46,7 +61,6 @@ export default class Dungeon {
     Dungeon.TILES.TOP_RIGHT_WALL,
     Dungeon.TILES.BOTTOM_RIGHT_WALL,
     Dungeon.TILES.BOTTOM_LEFT_WALL,
-    Dungeon.TILES.TOP_UPPER_WALL,
   ]
 
   constructor (scene, player) {
@@ -78,6 +92,16 @@ export default class Dungeon {
     this.scene.load.image('tileset', tileset);
   }
 
+  drawTile (layer, tile, x, y, w, h) {
+    if (Array.isArray(tile)) {
+      layer.weightedRandomize(tile, x, y, w, h);
+    } else if (w && h) {
+      layer.fill(tile, x, y, w, h);
+    } else {
+      layer.putTileAt(tile, x, y);
+    }
+  }
+
   create () {
     if (this.map) {
       this.map.destroy();
@@ -104,19 +128,21 @@ export default class Dungeon {
       const { x, y, width, height, left, right, top, bottom } = room;
 
       // Add floor
-      floorLayer.weightedRandomize(Dungeon.TILES.FLOOR, x, y, width, height);
+      this.drawTile(floorLayer, Dungeon.TILES.FLOOR, x, y, width, height);
 
       // Add walls
-      wallsLayer
-        .weightedRandomize(Dungeon.TILES.TOP_WALL, left, top, width, 1);
-      wallsLayer
-        .fill(Dungeon.TILES.BOTTOM_WALL, left + 1, bottom, width - 2, 1);
-      wallsLayer.fill(Dungeon.TILES.LEFT_WALL, left, top, 1, height - 1);
-      wallsLayer.fill(Dungeon.TILES.RIGHT_WALL, right, top, 1, height - 1);
+      this.drawTile(wallsLayer,
+        Dungeon.TILES.TOP_WALL, left, top, width, 1);
+      this.drawTile(wallsLayer,
+        Dungeon.TILES.BOTTOM_WALL, left + 1, bottom, width - 2, 1);
+      this.drawTile(wallsLayer,
+        Dungeon.TILES.LEFT_WALL, left, top, 1, height - 1);
+      this.drawTile(wallsLayer,
+        Dungeon.TILES.RIGHT_WALL, right, top, 1, height - 1);
 
       // Add wall corners
-      wallsLayer.putTileAt(Dungeon.TILES.BOTTOM_LEFT_WALL, left, bottom);
-      wallsLayer.putTileAt(Dungeon.TILES.BOTTOM_RIGHT_WALL, right, bottom);
+      this.drawTile(wallsLayer, Dungeon.TILES.BOTTOM_LEFT_WALL, left, bottom);
+      this.drawTile(wallsLayer, Dungeon.TILES.BOTTOM_RIGHT_WALL, right, bottom);
 
       const doors = room.getDoorLocations();
 
@@ -129,17 +155,17 @@ export default class Dungeon {
         // TODO: create an issue at https://github.com/wiserim/phaser-raycaster
         // and remove this workaround when fixed
         // wallsLayer.removeTileAt(x + dx, y + dy);
-        wallsLayer.putTileAt(-1, x + dx, y + dy);
+        this.drawTile(wallsLayer, -1, x + dx, y + dy);
 
         if (dx === 0) {
-          wallsLayer.putTileAt(TILES.TOP_RIGHT, x + dx, y + dy - 1);
-          wallsLayer.putTileAt(TILES.BOTTOM_RIGHT, x + dx, y + dy + 1);
+          this.drawTile(wallsLayer, TILES.TOP_RIGHT, x + dx, y + dy - 1);
+          this.drawTile(wallsLayer, TILES.BOTTOM_RIGHT, x + dx, y + dy + 1);
         } else if (dx === room.width - 1) {
-          wallsLayer.putTileAt(TILES.TOP_LEFT, x + dx, y + dy - 1);
-          wallsLayer.putTileAt(TILES.BOTTOM_LEFT, x + dx, y + dy + 1);
+          this.drawTile(wallsLayer, TILES.TOP_LEFT, x + dx, y + dy - 1);
+          this.drawTile(wallsLayer, TILES.BOTTOM_LEFT, x + dx, y + dy + 1);
         } else if (dy === room.height - 1) {
-          wallsLayer.putTileAt(TILES.BOTTOM_RIGHT, x + dx - 1, y + dy);
-          wallsLayer.putTileAt(TILES.BOTTOM_LEFT, x + dx + 1, y + dy);
+          this.drawTile(wallsLayer, TILES.BOTTOM_RIGHT, x + dx - 1, y + dy);
+          this.drawTile(wallsLayer, TILES.BOTTOM_LEFT, x + dx + 1, y + dy);
         }
       });
     });
