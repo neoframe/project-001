@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 
+import Settings from './settings';
 import logo from '../assets/logo.png';
 
 export default class IntroScene extends Scene {
@@ -9,6 +10,12 @@ export default class IntroScene extends Scene {
 
   preload () {
     this.load.image('logo', logo);
+
+    // Load settings into registry
+    Settings.items.forEach(item => {
+      const value = globalThis.localStorage.getItem(item.key);
+      this.registry.set(item.key, value || item.default);
+    });
   }
 
   create () {

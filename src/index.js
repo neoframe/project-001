@@ -4,6 +4,7 @@ import Raycaster from 'phaser-raycaster';
 import { DEBUG, FPS } from './utils/settings';
 import Intro from './scenes/intro';
 import Menu from './scenes/menu';
+import Settings from './scenes/settings';
 import Main from './scenes/main';
 import './index.css';
 
@@ -28,7 +29,7 @@ const _ = new Game({
     autoCenter: Scale.CENTER_BOTH,
   },
   pixelArt: true,
-  scene: [Intro, Menu, Main],
+  scene: [Intro, Menu, Settings, Main],
   plugins: {
     scene: [
       { key: 'raycaster', plugin: Raycaster, mapping: 'raycasterPlugin' },

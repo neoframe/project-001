@@ -1,8 +1,7 @@
-import { Display, GameObjects, Geom, Math as PMath, Physics } from 'phaser';
+import { Display, GameObjects, Geom, Math as PMath } from 'phaser';
 
 import {
   DEBUG,
-  LIGHT_MODE,
   PLAYER_LIGHT_CONE_ANGLE,
   PLAYER_LIGHT_MAX_DISTANCE,
   PLAYER_SPEED,
@@ -37,6 +36,10 @@ export default class Player extends GameObjects.Sprite {
 
     scene.load
       .spritesheet('charset', charset, { frameWidth: 32, frameHeight: 48 });
+  }
+
+  getSetting (key) {
+    return this.scene.registry.get(key);
   }
 
   create () {
@@ -115,9 +118,16 @@ export default class Player extends GameObjects.Sprite {
   }
 
   createSpotLight () {
+    const difficulty = this.getSetting('difficulty');
+
     this.scene.lights.enable();
-    this.spotlight = this.scene.lights
-      .addLight(0, 0, DEBUG ? 10000 : PLAYER_LIGHT_MAX_DISTANCE, 0xffffff, 1.5);
+    this.spotlight = this.scene.lights.addLight(
+      0, 0,
+      DEBUG
+        ? 10000
+        : PLAYER_LIGHT_MAX_DISTANCE * (difficulty === 'easy' ? 2 : 1),
+      0xffffff, 1.5
+    );
     this.setPipeline('Light2D');
     this.setTint(0x666666);
   }
@@ -143,13 +153,15 @@ export default class Player extends GameObjects.Sprite {
     this.ray.setAngle(this.pointerAngle);
 
     // Gather all the objects that the ray collides with
-    const intersections = LIGHT_MODE === 'circle'
+    const difficulty = this.getSetting('difficulty');
+    const lightMode = difficulty === 'easy' ? 'circle' : 'cone';
+    const intersections = lightMode === 'circle'
       ? this.ray.castCircle()
       : this.ray.castCone();
 
     // In cone mode, we need to add the ray's origin to the intersections
     // to correctly close the mask shape, otherwise everything is fucked
-    LIGHT_MODE !== 'circle' && intersections.push(this.ray.origin);
+    lightMode !== 'circle' && intersections.push(this.ray.origin);
 
     // And then we redraw the light according to the new raycasting points
     this.lightMask.clear();

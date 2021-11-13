@@ -47,6 +47,8 @@ export default class MenuScene extends Scene {
   }
 
   create () {
+    this.selected = 0;
+
     const { centerX, centerY } = this.cameras.main;
 
     this.container = this.add.container(centerX, centerY).setDepth(2);
