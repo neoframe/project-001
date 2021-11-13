@@ -1,4 +1,4 @@
-import { Display, GameObjects, Math as PMath, Physics } from 'phaser';
+import { Display, GameObjects, Geom, Math as PMath, Physics } from 'phaser';
 
 import {
   DEBUG,
@@ -47,6 +47,8 @@ export default class Player extends GameObjects.Sprite {
     this.body.setCollideWorldBounds(true);
     this.body.setSize(14, 25);
     this.body.setOffset(8, 20);
+
+    this.centeredOrigin = new Geom.Point(this.x, this.y);
 
     this.scene.anims.create({
       key: 'walk-front',
@@ -225,5 +227,6 @@ export default class Player extends GameObjects.Sprite {
     this.setDirection();
     this.spotlight.setPosition(this.x, this.y);
     this.drawLightBeam();
+    this.centeredOrigin.setTo(this.x, this.y);
   }
 }

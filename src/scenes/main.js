@@ -41,7 +41,7 @@ export default class MainScene extends Scene {
     this.raycaster.setBoundingBox(...bounds);
 
     // Add camera
-    this.cameras.main.startFollow(this.player);
+    this.cameras.main.startFollow(this.player.centeredOrigin, true);
     this.cameras.main.setZoom(ZOOM);
 
     // Set collisions between walls & light
