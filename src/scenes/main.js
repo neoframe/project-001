@@ -14,7 +14,29 @@ export default class MainScene extends Scene {
     this.dungeon = new Dungeon(this, this.player);
   }
 
+  getData (key, def) {
+    return this.registry.get(key) ||
+      JSON.parse(globalThis.localStorage.getItem(key)) ||
+      def;
+  }
+
+  setKeysToFind () {
+    const difficulty = this.getData('difficulty', 'normal');
+    const level = this.getData('level', 1);
+
+    let keys;
+
+    switch (difficulty) {
+      case 'easy': keys = 1; break;
+      default: keys = level > 10 ? 2 : level > 20 ? 3 : 1;
+    }
+
+    this.registry.set('keysToFind', keys);
+  }
+
   create () {
+    this.setKeysToFind();
+
     // Generate lightning
     this.raycaster = this.raycasterPlugin.createRaycaster({});
 
@@ -48,6 +70,8 @@ export default class MainScene extends Scene {
     this.raycaster.mapGameObjects(this.dungeon.obstacles, true, {
       collisionTiles: Dungeon.LIGHT_BLOCKING_TILES,
     });
+
+    this.scene.launch('HUDScene');
   }
 
   update () {
