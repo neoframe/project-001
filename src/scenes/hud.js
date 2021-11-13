@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 
-import { FONT, ZOOM } from '../utils/settings';
+import { FONT } from '../utils/settings';
 import sprites from '../assets/hud.png';
 
 export default class HUD extends Scene {

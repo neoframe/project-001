@@ -1,7 +1,9 @@
+import { Math as PMath } from 'phaser';
 import RandomDungeon from '@mikewesthad/dungeon';
 
-import tileset from '../assets/tileset.png';
 import { DEBUG } from '../utils/settings';
+import tileset from '../assets/tileset.png';
+import objects from '../assets/objects.png';
 
 export default class Dungeon {
   static TILES = {
@@ -48,6 +50,7 @@ export default class Dungeon {
       BOTTOM_LEFT: 8,
       BOTTOM_RIGHT: 9,
     },
+    KEY: 0,
   };
 
   static LIGHT_BLOCKING_TILES = [
@@ -67,6 +70,23 @@ export default class Dungeon {
     this.scene = scene;
     this.player = player;
 
+    this.scene.load.image('tileset', tileset);
+    this.scene.load.spritesheet('objects', objects,
+      { frameWidth: 32, frameHeight: 32 });
+  }
+
+  drawTile (layer, tile, x, y, w, h) {
+    if (Array.isArray(tile)) {
+      layer.weightedRandomize(tile, x, y, w, h);
+    } else if (w && h) {
+      layer.fill(tile, x, y, w, h);
+    } else {
+      layer.putTileAt(tile, x, y);
+    }
+  }
+
+  create () {
+    delete this.dungeon;
     this.dungeon = new RandomDungeon({
       width: 50,
       height: 50,
@@ -89,24 +109,11 @@ export default class Dungeon {
       this.dungeon.drawToConsole();
     }
 
-    this.scene.load.image('tileset', tileset);
-  }
+    this.playerCollider?.destroy();
+    this.wallsLayer?.destroy();
+    this.obstacles = [];
 
-  drawTile (layer, tile, x, y, w, h) {
-    if (Array.isArray(tile)) {
-      layer.weightedRandomize(tile, x, y, w, h);
-    } else if (w && h) {
-      layer.fill(tile, x, y, w, h);
-    } else {
-      layer.putTileAt(tile, x, y);
-    }
-  }
-
-  create () {
-    if (this.map) {
-      this.map.destroy();
-    }
-
+    this.map?.destroy?.();
     this.map = this.scene.make.tilemap({
       tileWidth: 32,
       tileHeight: 32,
@@ -171,10 +178,60 @@ export default class Dungeon {
     });
 
     wallsLayer.setCollisionByExclusion([-1]);
-    this.scene.physics.add.collider(this.player, wallsLayer);
+    this.playerCollider = this.scene.physics.add
+      .collider(this.player, wallsLayer);
     this.player.x = this.map.widthInPixels / 2;
     this.player.y = this.map.heightInPixels / 2;
 
+    this.wallsLayer = wallsLayer;
     this.obstacles = [wallsLayer, floorLayer];
+
+    this.hideKeys();
+  }
+
+  hideKeys () {
+    const keysToFind = this.scene.registry.get('keysToFind') || 1;
+
+    this.keys?.destroy?.();
+    this.keys = this.scene.physics.add.group();
+
+    for (let i = 0; i < keysToFind; i++) {
+      const roomId = PMath.Between(1, this.dungeon.rooms.length - 1);
+      const room = this.dungeon.rooms[roomId];
+
+      const position = this.map.tileToWorldXY(
+        PMath.Between(room.left + 2, room.right - 2),
+        PMath.Between(room.top + 2, room.bottom - 2),
+      );
+
+      const key = this.scene.add.image(
+        position.x,
+        position.y,
+        'objects',
+        Dungeon.TILES.KEY
+      ).setDepth(1).setScale(0.8);
+
+      this.keys.add(key);
+
+      // Fucking keys are not being added to the physics group, and I don't
+      // know why. So I add them one by fucking one
+      this.scene.add.existing(key);
+      this.scene.physics.add.existing(key);
+      this.scene.physics.add.overlap(this.player, key, (_, key) => {
+        if (key.used) {
+          return;
+        }
+
+        key.used = true;
+        key.destroy();
+        this.player.findKey();
+      });
+      key.body.setSize(16, 16);
+    }
+
+    // This should, theoretically, be the same as the above, but I don't know
+    // why it isn't (and copilot wrote this, fuck my life)
+    // this.scene.physics.add.existing(this.keys);
+    // this.scene.physics.add.collider(this.player, this.keys);
   }
 }

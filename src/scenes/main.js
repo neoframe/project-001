@@ -34,12 +34,15 @@ export default class MainScene extends Scene {
     this.registry.set('keysToFind', keys);
   }
 
+  setKeys (count = 0) {
+    this.registry.set('keysFound', count);
+  }
+
+  nextLevel () {
+    this.registry.set('level', this.getData('level', 1) + 1);
+  }
+
   create () {
-    this.setKeysToFind();
-
-    // Generate lightning
-    this.raycaster = this.raycasterPlugin.createRaycaster({});
-
     // Generate keys (arrows + space + enter + ZQSD)
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cursors.z = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.Z);
@@ -49,6 +52,36 @@ export default class MainScene extends Scene {
 
     // Create player
     this.player.create();
+    this.player.events.on('findKey', () => {
+      this.setKeys(this.getData('keysFound', 0) + 1);
+
+      if (this.getData('keysFound', 0) + 1 >= this.getData('keysToFind')) {
+        this.nextLevel();
+        this.initLevel();
+      }
+    });
+
+    // Add camera
+    this.cameras.main.startFollow(this.player.centeredOrigin, true);
+    this.cameras.main.setZoom(ZOOM);
+
+    this.initLevel();
+
+    this.scene.launch('HUDScene');
+  }
+
+  update () {
+    this.player.update();
+  }
+
+  initLevel () {
+    this.setKeysToFind();
+    this.setKeys();
+
+    // Generate lightning
+    delete this.raycaster;
+    this.raycaster = this.raycasterPlugin.createRaycaster({});
+    this.player.initLightning();
 
     // Create walls & floors
     this.dungeon.create();
@@ -62,19 +95,9 @@ export default class MainScene extends Scene {
     this.player.setFieldOfView(...bounds);
     this.raycaster.setBoundingBox(...bounds);
 
-    // Add camera
-    this.cameras.main.startFollow(this.player.centeredOrigin, true);
-    this.cameras.main.setZoom(ZOOM);
-
     // Set collisions between walls & light
     this.raycaster.mapGameObjects(this.dungeon.obstacles, true, {
       collisionTiles: Dungeon.LIGHT_BLOCKING_TILES,
     });
-
-    this.scene.launch('HUDScene');
-  }
-
-  update () {
-    this.player.update();
   }
 }

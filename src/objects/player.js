@@ -1,4 +1,4 @@
-import { Display, GameObjects, Geom, Math as PMath } from 'phaser';
+import { Display, Events, GameObjects, Geom, Math as PMath } from 'phaser';
 
 import {
   DEBUG,
@@ -24,6 +24,7 @@ export default class Player extends GameObjects.Sprite {
     },
   };
 
+  events = new Events.EventEmitter()
   pointerAngle = 0;
   ray = null;
   lightMask = null;
@@ -84,19 +85,24 @@ export default class Player extends GameObjects.Sprite {
       frameRate: 6,
       repeat: -1,
     });
+  }
 
+  initLightning () {
     // Create the light ray using the scene raycaster
+    this.ray?.destroy?.();
     this.ray = this.scene.raycaster.createRay();
     // The more the cone angle, the more the performances will be affected
     this.ray.setConeDeg(PLAYER_LIGHT_CONE_ANGLE);
 
     // This graphics represents the light (basically it's just an undefined
     // rectangle, for now)
+    this.lightMask?.destroy();
     this.lightMask = this.scene.add
       .graphics({ fillStyle: { color: 0xffffff, alpha: 0 } });
     this.lightMask.setDepth(1);
 
     // This is the mask that will be used to cut the light into the ray's cone
+    this.upperLightMask?.destroy();
     this.upperLightMask = new Display.Masks
       .GeometryMask(this.scene, this.lightMask);
     this.upperLightMask.setInvertAlpha(true);
@@ -106,6 +112,7 @@ export default class Player extends GameObjects.Sprite {
 
     // This graphics represents the shadows (another undefined rectangle, black
     // this time)
+    this.fov?.destroy();
     this.fov = this.scene.add.graphics({
       fillStyle: { color: 0x000000, alpha: DEBUG ? 0.2 : 0.85 },
     }).setDepth(2);
@@ -114,13 +121,15 @@ export default class Player extends GameObjects.Sprite {
       this.scene.physics.world.bounds.width,
       this.scene.physics.world.bounds.height);
 
-    this.setDepth(3);
+    this.setDepth(4);
   }
 
   createSpotLight () {
     const difficulty = this.getSetting('difficulty');
 
     this.scene.lights.enable();
+
+    this.scene.lights.removeLight(this.spotlight);
     this.spotlight = this.scene.lights.addLight(
       0, 0,
       DEBUG
@@ -240,5 +249,9 @@ export default class Player extends GameObjects.Sprite {
     this.spotlight.setPosition(this.x, this.y);
     this.drawLightBeam();
     this.centeredOrigin.setTo(this.x, this.y);
+  }
+
+  findKey () {
+    this.events.emit('findKey');
   }
 }
