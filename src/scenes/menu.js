@@ -1,6 +1,9 @@
 import { Scene } from 'phaser';
 
+import { ZOOM } from '../utils/settings';
+import Dungeon from '../objects/dungeon';
 import logo from '../assets/game-logo.png';
+import tileset from '../assets/tileset.png';
 
 export default class MenuScene extends Scene {
   selected = 0;
@@ -15,12 +18,40 @@ export default class MenuScene extends Scene {
 
   preload () {
     this.load.image('game-logo', logo);
+    this.load.image('tileset', tileset);
+  }
+
+  generateBackground () {
+    const { x, y, width, height } = this.cameras.main;
+    const size = 32 * ZOOM;
+
+    const map = this.add
+      .tilemap(null, size, size, width / size, height / size);
+
+    const tileset = map.addTilesetImage('tileset', 'tileset', 32, 32, 0, 0);
+
+    this.background = map
+      .createBlankLayer(
+        'background', tileset, x, y, map.width, map.height, size, size
+      )
+      .fill(Dungeon.TILES.GROUND)
+      .setOrigin(0)
+      .setDepth(1)
+      .setAlpha(0.3);
+
+    for (let x = 0; x < map.width; x++) {
+      for (let y = 0; y < map.height; y++) {
+        this.background.weightedRandomize(Dungeon.TILES.FLOOR, x, y);
+      }
+    }
   }
 
   create () {
     const { centerX, centerY } = this.cameras.main;
 
-    this.container = this.add.container(centerX, centerY);
+    this.container = this.add.container(centerX, centerY).setDepth(2);
+
+    this.generateBackground();
 
     this.logo = this.add.image(0, 0, 'game-logo')
       .setOrigin(0.5)
@@ -56,7 +87,7 @@ export default class MenuScene extends Scene {
   }
 
   update () {
-    const { centerX, centerY } = this.cameras.main;
+    const { x, y, centerX, centerY } = this.cameras.main;
 
     this.container.setPosition(centerX, centerY - 50);
 
@@ -65,5 +96,7 @@ export default class MenuScene extends Scene {
       selectedItem.x - (selectedItem.width / 2) - 20,
       selectedItem.y + 5
     );
+
+    this.background.setPosition(x, y);
   }
 }
