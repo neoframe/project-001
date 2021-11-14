@@ -21,6 +21,9 @@ export default class HUD extends Scene {
   }
 
   generateKeysToFind () {
+    this.keysToFind?.destroy(true, true);
+    delete this.keysToFind;
+
     this.keysToFind = this.add.group({
       key: 'hud',
       frame: 1,
@@ -40,7 +43,7 @@ export default class HUD extends Scene {
   }
 
   getKeys () {
-    return this.registry.get('keysFound') || 2;
+    return this.registry.get('keysFound') || 0;
   }
 
   create () {
@@ -49,8 +52,11 @@ export default class HUD extends Scene {
 
     this.generateKeysToFind();
 
+    this.registry.events.on('changedata-level', () => {
+      this.level.setText('level: ' + this.getLevel());
+    });
+
     this.registry.events.on('changedata-keysToFind', () => {
-      this.keysToFind.destroy();
       this.generateKeysToFind();
     });
 
@@ -59,9 +65,5 @@ export default class HUD extends Scene {
         this.keysToFind?.children?.getArray()?.[i]?.setTexture('hud', 0);
       }
     });
-  }
-
-  update () {
-    this.level.setText('level: ' + this.getLevel());
   }
 }

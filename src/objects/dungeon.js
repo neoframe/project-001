@@ -1,4 +1,4 @@
-import { Math as PMath } from 'phaser';
+import { Events, Math as PMath } from 'phaser';
 import RandomDungeon from '@mikewesthad/dungeon';
 
 import { DEBUG } from '../utils/settings';
@@ -44,27 +44,33 @@ export default class Dungeon {
       { index: 6, weight: 1 },
       { index: 7, weight: 1 },
     ],
-    DOOR: {
+    CORRIDOR: {
       TOP_LEFT: 32,
       TOP_RIGHT: 33,
       BOTTOM_LEFT: 8,
       BOTTOM_RIGHT: 9,
     },
     KEY: 0,
+    DOOR: {
+      OPENED: 1,
+      CLOSED: 2,
+    },
   };
 
   static LIGHT_BLOCKING_TILES = [
     ...Dungeon.TILES.LEFT_WALL.map(t => t.index),
     ...Dungeon.TILES.RIGHT_WALL.map(t => t.index),
     ...Dungeon.TILES.BOTTOM_WALL.map(t => t.index),
-    Dungeon.TILES.DOOR.BOTTOM_LEFT,
-    Dungeon.TILES.DOOR.BOTTOM_RIGHT,
+    Dungeon.TILES.CORRIDOR.BOTTOM_LEFT,
+    Dungeon.TILES.CORRIDOR.BOTTOM_RIGHT,
     Dungeon.TILES.GROUND,
     Dungeon.TILES.TOP_LEFT_WALL,
     Dungeon.TILES.TOP_RIGHT_WALL,
     Dungeon.TILES.BOTTOM_RIGHT_WALL,
     Dungeon.TILES.BOTTOM_LEFT_WALL,
   ]
+
+  events = new Events.EventEmitter()
 
   constructor (scene, player) {
     this.scene = scene;
@@ -86,7 +92,6 @@ export default class Dungeon {
   }
 
   create () {
-    delete this.dungeon;
     this.dungeon = new RandomDungeon({
       width: 50,
       height: 50,
@@ -155,7 +160,7 @@ export default class Dungeon {
 
       doors.forEach(door => {
         const { x: dx, y: dy } = door;
-        const TILES = Dungeon.TILES.DOOR;
+        const TILES = Dungeon.TILES.CORRIDOR;
 
         // Removing a tile doesn't work with phaser-raycaster 0.9.4 as the tile
         // becomes null, replaced with tile type of -1 at door position
@@ -187,6 +192,7 @@ export default class Dungeon {
     this.obstacles = [wallsLayer, floorLayer];
 
     this.hideKeys();
+    this.generateDoor();
   }
 
   hideKeys () {
@@ -196,7 +202,8 @@ export default class Dungeon {
     this.keys = this.scene.physics.add.group();
 
     for (let i = 0; i < keysToFind; i++) {
-      const roomId = PMath.Between(1, this.dungeon.rooms.length - 1);
+      const roomId = DEBUG
+        ? 0 : PMath.Between(1, this.dungeon.rooms.length - 1);
       const room = this.dungeon.rooms[roomId];
 
       const position = this.map.tileToWorldXY(
@@ -214,7 +221,7 @@ export default class Dungeon {
       this.keys.add(key);
 
       // Fucking keys are not being added to the physics group, and I don't
-      // know why. So I add them one by fucking one
+      // know why. So I have to add them one by fucking one
       this.scene.add.existing(key);
       this.scene.physics.add.existing(key);
       this.scene.physics.add.overlap(this.player, key, (_, key) => {
@@ -226,12 +233,54 @@ export default class Dungeon {
         key.destroy();
         this.player.findKey();
       });
+
       key.body.setSize(16, 16);
     }
 
     // This should, theoretically, be the same as the above, but I don't know
-    // why it isn't (and copilot wrote this, fuck my life)
+    // why it isn't (and copilot wrote this comment, fuck my life)
     // this.scene.physics.add.existing(this.keys);
     // this.scene.physics.add.collider(this.player, this.keys);
+  }
+
+  generateDoor () {
+    const roomId = DEBUG
+      ? 0 : PMath.Between(1, this.dungeon.rooms.length - 1);
+    const room = this.dungeon.rooms[roomId];
+    const pathways = room.getDoorLocations();
+
+    let position = PMath.Between(room.left + 2, room.right - 2);
+
+    while (pathways.some(door => position === room.x + door.x)) {
+      position = PMath.Between(room.left + 2, room.right - 2);
+    }
+
+    position = this.map.tileToWorldXY(position, room.top);
+
+    this.door = this.scene.add.image(
+      position.x, position.y, 'objects', Dungeon.TILES.DOOR.CLOSED
+    ).setDepth(1).setOrigin(0).setPipeline('Light2D');
+
+    this.scene.physics.add.existing(this.door);
+    this.scene.physics.add.overlap(this.player, this.door, (_, door) => {
+      if (door.used || !door.opened) {
+        return;
+      }
+
+      door.used = true;
+      this.events.emit('nextLevel');
+    });
+
+    this.door.body.setSize(32, 35).setOffset(0, 3);
+  }
+
+  openDoor () {
+    this.door.opened = true;
+    this.door.setTexture('objects', Dungeon.TILES.DOOR.OPENED);
+  }
+
+  destroy () {
+    this.keys?.destroy?.(true, true);
+    this.door?.destroy();
   }
 }

@@ -39,7 +39,31 @@ export default class MainScene extends Scene {
   }
 
   nextLevel () {
+    this.player.canMove = false;
+
     this.registry.set('level', this.getData('level', 1) + 1);
+
+    const mask = this.add.rectangle(
+      0, 0, this.cameras.main.width, this.cameras.main.height, 0x000000
+    ).setAlpha(0).setScrollFactor(0).setDepth(Infinity).setOrigin(0);
+
+    this.tweens.add({
+      targets: mask,
+      duration: 500,
+      alpha: 1,
+      onComplete: () => {
+        this.initLevel();
+        this.tweens.add({
+          targets: mask,
+          duration: 500,
+          alpha: 0,
+          onComplete: () => {
+            this.player.canMove = true;
+            mask.destroy();
+          },
+        });
+      },
+    });
   }
 
   create () {
@@ -55,9 +79,8 @@ export default class MainScene extends Scene {
     this.player.events.on('findKey', () => {
       this.setKeys(this.getData('keysFound', 0) + 1);
 
-      if (this.getData('keysFound', 0) + 1 >= this.getData('keysToFind')) {
-        this.nextLevel();
-        this.initLevel();
+      if (this.getData('keysFound', 0) >= this.getData('keysToFind')) {
+        this.dungeon.openDoor();
       }
     });
 
@@ -84,7 +107,9 @@ export default class MainScene extends Scene {
     this.player.initLightning();
 
     // Create walls & floors
+    this.dungeon?.destroy();
     this.dungeon.create();
+    this.dungeon.events.once('nextLevel', () => this.nextLevel());
 
     // Adjust lightning according to walls
     const bounds = [

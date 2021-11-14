@@ -31,6 +31,7 @@ export default class Player extends GameObjects.Sprite {
   upperLightMask = null;
   fov = null;
   spotlight = null;
+  canMove = true;
 
   constructor (scene, ...args) {
     super(scene, ...args);
@@ -179,6 +180,10 @@ export default class Player extends GameObjects.Sprite {
   }
 
   move () {
+    if (!this.canMove) {
+      return;
+    }
+
     if (this.scene.cursors.left.isDown || this.scene.cursors.q.isDown) {
       this.body.setVelocityX(-PLAYER_SPEED);
     } else if (this.scene.cursors.right.isDown || this.scene.cursors.d.isDown) {
