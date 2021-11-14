@@ -181,6 +181,8 @@ export default class Player extends GameObjects.Sprite {
 
   move () {
     if (!this.canMove) {
+      this.body.setVelocityX(0);
+      this.body.setVelocityY(0);
       return;
     }
 

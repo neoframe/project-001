@@ -92,9 +92,12 @@ export default class Dungeon {
   }
 
   create () {
+    const level = this.scene.getData('level', 1);
+    const difficulty = this.scene.getData('difficulty', 'normal');
+
     this.dungeon = new RandomDungeon({
-      width: 50,
-      height: 50,
+      width: 25 + Math.min(50, (difficulty === 'easy' ? 1 : 2) * level),
+      height: 25 + Math.min(50, (difficulty === 'easy' ? 1 : 2) * level),
       doorPadding: 2,
       rooms: {
         width: {
@@ -118,7 +121,7 @@ export default class Dungeon {
     this.wallsLayer?.destroy();
     this.obstacles = [];
 
-    this.map?.destroy?.();
+    this.map?.destroy();
     this.map = this.scene.make.tilemap({
       tileWidth: 32,
       tileHeight: 32,
@@ -263,12 +266,7 @@ export default class Dungeon {
 
     this.scene.physics.add.existing(this.door);
     this.scene.physics.add.overlap(this.player, this.door, (_, door) => {
-      if (door.used || !door.opened) {
-        return;
-      }
-
-      door.used = true;
-      this.events.emit('nextLevel');
+      this.useDoor(door);
     });
 
     this.door.body.setSize(32, 35).setOffset(0, 3);
@@ -277,6 +275,15 @@ export default class Dungeon {
   openDoor () {
     this.door.opened = true;
     this.door.setTexture('objects', Dungeon.TILES.DOOR.OPENED);
+  }
+
+  useDoor (door) {
+    if (door.used || !door.opened) {
+      return;
+    }
+
+    door.used = true;
+    this.events.emit('nextLevel');
   }
 
   destroy () {

@@ -28,7 +28,7 @@ export default class MainScene extends Scene {
 
     switch (difficulty) {
       case 'easy': keys = 1; break;
-      default: keys = level > 10 ? 2 : level > 20 ? 3 : 1;
+      default: keys = level >= 5 ? 2 : level >= 10 ? 3 : 1;
     }
 
     this.registry.set('keysToFind', keys);
@@ -67,6 +67,8 @@ export default class MainScene extends Scene {
   }
 
   create () {
+    this.registry.set('level', this.getData('level', 1));
+
     // Generate keys (arrows + space + enter + ZQSD)
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cursors.z = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.Z);
