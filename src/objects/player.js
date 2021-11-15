@@ -88,6 +88,15 @@ export default class Player extends GameObjects.Sprite {
     });
   }
 
+  update () {
+    this.move();
+    this.determinePointerAngle();
+    this.setDirection();
+    this.spotlight.setPosition(this.x, this.y);
+    this.drawLightBeam();
+    this.centeredOrigin.setTo(this.x, this.y);
+  }
+
   initLightning () {
     // Create the light ray using the scene raycaster
     this.ray?.destroy?.();
@@ -183,6 +192,7 @@ export default class Player extends GameObjects.Sprite {
     if (!this.canMove) {
       this.body.setVelocityX(0);
       this.body.setVelocityY(0);
+
       return;
     }
 
@@ -247,15 +257,6 @@ export default class Player extends GameObjects.Sprite {
         this.setFrame(Player.FRAMES.IDLE.BACK);
       }
     }
-  }
-
-  update () {
-    this.move();
-    this.determinePointerAngle();
-    this.setDirection();
-    this.spotlight.setPosition(this.x, this.y);
-    this.drawLightBeam();
-    this.centeredOrigin.setTo(this.x, this.y);
   }
 
   findKey () {
