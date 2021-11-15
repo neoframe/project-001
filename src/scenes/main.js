@@ -14,10 +14,73 @@ export default class MainScene extends Scene {
     this.dungeon = new Dungeon(this, this.player);
   }
 
+  create () {
+    this.registry.set('level', this.getData('level', 1));
+
+    // Generate keys (arrows + space + enter + ZQSD)
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.cursors.z = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.Z);
+    this.cursors.q = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.Q);
+    this.cursors.s = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.S);
+    this.cursors.d = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.D);
+
+    // Create player
+    this.player.create();
+    this.player.events.on('findKey', this.onFindKey.bind(this));
+
+    // Add camera
+    this.cameras.main.startFollow(this.player.centeredOrigin, true);
+    this.cameras.main.setZoom(ZOOM);
+
+    this.initLevel();
+
+    this.scene.launch('HUDScene');
+  }
+
+  update () {
+    this.player.update();
+  }
+
+  initLevel () {
+    this.setKeysToFind();
+    this.setData('keysFound', 0);
+
+    // Generate lightning
+    delete this.raycaster;
+    this.raycaster = this.raycasterPlugin.createRaycaster({});
+    this.player.initLightning();
+
+    // Create walls & floors
+    this.dungeon?.destroy();
+    this.dungeon.create();
+    this.dungeon.events.once('nextLevel', this.nextLevel.bind(this));
+
+    // Adjust lightning according to walls
+    const bounds = [
+      0, 0, this.dungeon.map.widthInPixels, this.dungeon.map.heightInPixels,
+    ];
+    this.physics.world.setBounds(...bounds);
+    this.cameras.main.setBounds(...bounds);
+    this.player.setFieldOfView(...bounds);
+    this.raycaster.setBoundingBox(...bounds);
+
+    // Set collisions between walls & light
+    this.raycaster.mapGameObjects(this.dungeon.obstacles, true, {
+      collisionTiles: Dungeon.LIGHT_BLOCKING_TILES,
+    });
+  }
+
   getData (key, def) {
     return this.registry.get(key) ||
       JSON.parse(globalThis.localStorage.getItem(key)) ||
       def;
+  }
+
+  setData (key, value) {
+    this.registry.set(key, value);
+    globalThis.localStorage.setItem(key, JSON.stringify(value));
+
+    return this;
   }
 
   setKeysToFind () {
@@ -31,11 +94,7 @@ export default class MainScene extends Scene {
       default: keys = level >= 5 ? 2 : level >= 10 ? 3 : 1;
     }
 
-    this.registry.set('keysToFind', keys);
-  }
-
-  setKeys (count = 0) {
-    this.registry.set('keysFound', count);
+    this.setData('keysToFind', keys);
   }
 
   nextLevel () {
@@ -66,65 +125,12 @@ export default class MainScene extends Scene {
     });
   }
 
-  create () {
-    this.registry.set('level', this.getData('level', 1));
+  onFindKey () {
+    const keys = this.getData('keysFound', 0) + 1;
+    this.setData('keysFound', keys);
 
-    // Generate keys (arrows + space + enter + ZQSD)
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.cursors.z = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.Z);
-    this.cursors.q = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.Q);
-    this.cursors.s = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.S);
-    this.cursors.d = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.D);
-
-    // Create player
-    this.player.create();
-    this.player.events.on('findKey', () => {
-      this.setKeys(this.getData('keysFound', 0) + 1);
-
-      if (this.getData('keysFound', 0) >= this.getData('keysToFind')) {
-        this.dungeon.openDoor();
-      }
-    });
-
-    // Add camera
-    this.cameras.main.startFollow(this.player.centeredOrigin, true);
-    this.cameras.main.setZoom(ZOOM);
-
-    this.initLevel();
-
-    this.scene.launch('HUDScene');
-  }
-
-  update () {
-    this.player.update();
-  }
-
-  initLevel () {
-    this.setKeysToFind();
-    this.setKeys();
-
-    // Generate lightning
-    delete this.raycaster;
-    this.raycaster = this.raycasterPlugin.createRaycaster({});
-    this.player.initLightning();
-
-    // Create walls & floors
-    this.dungeon?.destroy();
-    this.dungeon.create();
-    this.dungeon.events.once('nextLevel', () => this.nextLevel());
-
-    // Adjust lightning according to walls
-    const bounds = [
-      0, 0, this.dungeon.map.widthInPixels, this.dungeon.map.heightInPixels,
-    ];
-    this.physics.world.setBounds(...bounds);
-    this.cameras.main.setBounds(...bounds);
-    this.player.setFieldOfView(...bounds);
-    this.raycaster.setBoundingBox(...bounds);
-
-    // Set collisions between walls & light
-    this.raycaster.mapGameObjects(this.dungeon.obstacles, true, {
-      collisionTiles: Dungeon.LIGHT_BLOCKING_TILES,
-    });
+    if (keys >= this.getData('keysToFind')) {
+      this.dungeon.openDoor();
+    }
   }
 }

@@ -81,16 +81,6 @@ export default class Dungeon {
       { frameWidth: 32, frameHeight: 32 });
   }
 
-  drawTile (layer, tile, x, y, w, h) {
-    if (Array.isArray(tile)) {
-      layer.weightedRandomize(tile, x, y, w, h);
-    } else if (w && h) {
-      layer.fill(tile, x, y, w, h);
-    } else {
-      layer.putTileAt(tile, x, y);
-    }
-  }
-
   create () {
     const level = this.scene.getData('level', 1);
     const difficulty = this.scene.getData('difficulty', 'normal');
@@ -117,6 +107,12 @@ export default class Dungeon {
       this.dungeon.drawToConsole();
     }
 
+    this.generateWalls();
+    this.hideKeys();
+    this.generateDoor();
+  }
+
+  generateWalls () {
     this.playerCollider?.destroy();
     this.wallsLayer?.destroy();
     this.obstacles = [];
@@ -193,9 +189,6 @@ export default class Dungeon {
 
     this.wallsLayer = wallsLayer;
     this.obstacles = [wallsLayer, floorLayer];
-
-    this.hideKeys();
-    this.generateDoor();
   }
 
   hideKeys () {
@@ -270,6 +263,16 @@ export default class Dungeon {
     });
 
     this.door.body.setSize(32, 35).setOffset(0, 3);
+  }
+
+  drawTile (layer, tile, x, y, w, h) {
+    if (Array.isArray(tile)) {
+      layer.weightedRandomize(tile, x, y, w, h);
+    } else if (w && h) {
+      layer.fill(tile, x, y, w, h);
+    } else {
+      layer.putTileAt(tile, x, y);
+    }
   }
 
   openDoor () {
