@@ -4,6 +4,7 @@ import RandomDungeon from '@mikewesthad/dungeon';
 import { DEBUG } from '../utils/settings';
 import tileset from '../assets/tileset.png';
 import objects from '../assets/objects.png';
+import Collectible from './collectible';
 
 export default class Dungeon {
   static TILES = {
@@ -207,30 +208,17 @@ export default class Dungeon {
         PMath.Between(room.top + 2, room.bottom - 2),
       );
 
-      const key = this.scene.add.image(
+      const key = new Collectible(
+        this.scene,
+        this.player,
+        'key',
         position.x,
         position.y,
-        'objects',
-        Dungeon.TILES.KEY
-      ).setDepth(1).setScale(0.8);
+      );
+      key.create();
+      key.events.on('collect', this.onCollectKey.bind(this));
 
       this.keys.add(key);
-
-      // Fucking keys are not being added to the physics group, and I don't
-      // know why. So I have to add them one by fucking one
-      this.scene.add.existing(key);
-      this.scene.physics.add.existing(key);
-      this.scene.physics.add.overlap(this.player, key, (_, key) => {
-        if (key.used) {
-          return;
-        }
-
-        key.used = true;
-        key.destroy();
-        this.player.findKey();
-      });
-
-      key.body.setSize(16, 16);
     }
 
     // This should, theoretically, be the same as the above, but I don't know
@@ -258,9 +246,8 @@ export default class Dungeon {
     ).setDepth(1).setOrigin(0).setPipeline('Light2D');
 
     this.scene.physics.add.existing(this.door);
-    this.scene.physics.add.overlap(this.player, this.door, (_, door) => {
-      this.useDoor(door);
-    });
+    this.scene.physics.add
+      .overlap(this.player, this.door, this.onUseDoor.bind(this));
 
     this.door.body.setSize(32, 35).setOffset(0, 3);
   }
@@ -275,12 +262,22 @@ export default class Dungeon {
     }
   }
 
+  onCollectKey (key) {
+    if (key.used) {
+      return;
+    }
+
+    key.used = true;
+    key.destroy();
+    this.player.findKey();
+  }
+
   openDoor () {
     this.door.opened = true;
     this.door.setTexture('objects', Dungeon.TILES.DOOR.OPENED);
   }
 
-  useDoor (door) {
+  onUseDoor (_, door) {
     if (door.used || !door.opened) {
       return;
     }
