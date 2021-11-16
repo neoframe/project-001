@@ -10,3 +10,5 @@ export const PLAYER_LIGHT_MAX_DISTANCE = 200;
 
 export const MAXIMUM_DARKNESS_INTENSITY = 900;
 export const LIGHT_MODE = 'cone';
+
+export const DEFAULT_GAME_TIME = 150;

@@ -7,6 +7,7 @@ import Menu from './scenes/menu';
 import Settings from './scenes/settings';
 import Main from './scenes/main';
 import HUD from './scenes/hud';
+import GameOver from './scenes/game-over';
 import './index.css';
 
 const _ = new Game({
@@ -30,7 +31,7 @@ const _ = new Game({
     autoCenter: Scale.CENTER_BOTH,
   },
   pixelArt: true,
-  scene: [Intro, Menu, Settings, Main, HUD],
+  scene: [Intro, Menu, Settings, Main, HUD, GameOver],
   plugins: {
     scene: [
       { key: 'raycaster', plugin: Raycaster, mapping: 'raycasterPlugin' },

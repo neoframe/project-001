@@ -12,6 +12,36 @@ export default class HUD extends Scene {
     this.load.spritesheet('hud', sprites, { frameWidth: 32, frameHeight: 32 });
   }
 
+  create () {
+    this.level = this.add
+      .text(20, 20, 'level: ' + this.getLevel(), FONT);
+
+    this.generateKeysToFind();
+
+    this.registry.events.on('changedata-level', () => {
+      this.level.setText('level: ' + this.getLevel());
+    });
+
+    this.registry.events.on('changedata-keysToFind', () => {
+      this.generateKeysToFind();
+    });
+
+    this.registry.events.on('changedata-keysFound', () => {
+      for (let i = 0; i < this.getKeys(); i++) {
+        this.keysToFind?.children?.getArray()?.[i]?.setTexture('hud', 0);
+      }
+    });
+
+    this.timer = this.add.text(
+      this.cameras.main.width, 20, 'time: ' + this.getRemainingTime(),
+      FONT,
+    ).setOrigin(1, 0).setScrollFactor(0);
+  }
+
+  update () {
+    this.timer.setText('time: ' + this.getRemainingTime());
+  }
+
   getLevel () {
     return this.registry.get('level') || 1;
   }
@@ -46,24 +76,7 @@ export default class HUD extends Scene {
     return this.registry.get('keysFound') || 0;
   }
 
-  create () {
-    this.level = this.add
-      .text(20, 20, 'level: ' + this.getLevel(), FONT);
-
-    this.generateKeysToFind();
-
-    this.registry.events.on('changedata-level', () => {
-      this.level.setText('level: ' + this.getLevel());
-    });
-
-    this.registry.events.on('changedata-keysToFind', () => {
-      this.generateKeysToFind();
-    });
-
-    this.registry.events.on('changedata-keysFound', () => {
-      for (let i = 0; i < this.getKeys(); i++) {
-        this.keysToFind?.children?.getArray()?.[i]?.setTexture('hud', 0);
-      }
-    });
+  getRemainingTime () {
+    return this.scene.get('MainScene')?.getRemainingTime() || 0;
   }
 }

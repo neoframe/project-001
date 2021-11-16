@@ -1,6 +1,6 @@
-import { Scene, Input } from 'phaser';
+import { Scene, Input, Cameras } from 'phaser';
 
-import { ZOOM } from '../utils/settings';
+import { DEFAULT_GAME_TIME, ZOOM } from '../utils/settings';
 import Player from '../objects/player';
 import Dungeon from '../objects/dungeon';
 
@@ -68,6 +68,12 @@ export default class MainScene extends Scene {
     this.raycaster.mapGameObjects(this.dungeon.obstacles, true, {
       collisionTiles: Dungeon.LIGHT_BLOCKING_TILES,
     });
+
+    this.timer?.destroy();
+    this.timer = this.time.addEvent({
+      delay: DEFAULT_GAME_TIME * 1000,
+      callback: this.onOutOfTime.bind(this),
+    });
   }
 
   getData (key, def) {
@@ -132,5 +138,21 @@ export default class MainScene extends Scene {
     if (keys >= this.getData('keysToFind')) {
       this.dungeon.openDoor();
     }
+  }
+
+  getRemainingTime () {
+    return this.timer?.getRemainingSeconds().toFixed(2);
+  }
+
+  onOutOfTime () {
+    this.player.canMove = false;
+    this.cameras.main.fadeOut(1000, 0, 0, 0);
+    this.scene.get('HUDScene').cameras.main.fadeOut(1000, 0, 0, 0);
+
+    this.cameras.main.once(Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.scene.stop('HUDScene');
+      this.scene.start('GameOverScene');
+    });
+
   }
 }
