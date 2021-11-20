@@ -2,6 +2,7 @@ import { Game, Scale, AUTO } from 'phaser';
 import Raycaster from 'phaser-raycaster';
 
 import { DEBUG, FPS } from './utils/settings';
+import CRT from './effects/crt.pipeline';
 import Intro from './scenes/intro';
 import Menu from './scenes/menu';
 import Settings from './scenes/settings';
@@ -37,4 +38,5 @@ const _ = new Game({
       { key: 'raycaster', plugin: Raycaster, mapping: 'raycasterPlugin' },
     ],
   },
+  pipeline: { CRT },
 });

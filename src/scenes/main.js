@@ -3,7 +3,7 @@ import { Scene, Input, Cameras } from 'phaser';
 import { DEFAULT_GAME_TIME, ZOOM } from '../utils/settings';
 import Player from '../objects/player';
 import Dungeon from '../objects/dungeon';
-
+import Bug from '../objects/bug';
 export default class MainScene extends Scene {
   constructor () {
     super('MainScene');
@@ -74,6 +74,12 @@ export default class MainScene extends Scene {
       delay: DEFAULT_GAME_TIME * 1000,
       callback: this.onOutOfTime.bind(this),
     });
+
+    // const bug = new Bug(this.scene, this.player, this.time, 'random-controls');
+    // this.eventTimer = this.time.addEvent({
+    //   delay: 5000,
+    //   callback: () => bug.start(),
+    // });
   }
 
   getData (key, def) {
