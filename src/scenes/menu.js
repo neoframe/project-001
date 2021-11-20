@@ -1,4 +1,4 @@
-import { Scene } from 'phaser';
+import { Cameras, Scene } from 'phaser';
 
 import { ZOOM } from '../utils/settings';
 import Dungeon from '../objects/dungeon';
@@ -8,7 +8,7 @@ import tileset from '../assets/tileset.png';
 export default class MenuScene extends Scene {
   selected = 0;
   menuItems = [
-    { text: 'play', action: () => this.scene.start('MainScene') },
+    { text: 'play', action: () => this.onGameStart() },
     { text: 'settings', action: () => this.scene.start('SettingsScene') },
   ];
 
@@ -100,5 +100,12 @@ export default class MenuScene extends Scene {
     );
 
     this.background.setPosition(x, y);
+  }
+
+  onGameStart () {
+    this.cameras.main.fadeOut(500, 0, 0, 0);
+    this.cameras.main.once(Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.scene.start('MainScene');
+    });
   }
 }
