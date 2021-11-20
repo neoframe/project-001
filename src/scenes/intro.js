@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 
 import Settings from './settings';
 import logo from '../assets/logo.png';
+import CRT from '../effects/crt.pipeline';
 
 export default class IntroScene extends Scene {
   constructor () {
@@ -37,6 +38,8 @@ export default class IntroScene extends Scene {
     }).on('complete', () => {
       this.scene.start('MenuScene');
     });
+
+    this.cameras.main.setPostPipeline(CRT);
   }
 
   update () {

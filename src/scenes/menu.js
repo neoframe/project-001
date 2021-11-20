@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 
 import { ZOOM } from '../utils/settings';
+import CRT from '../effects/crt.pipeline';
 import Dungeon from '../objects/dungeon';
 import logo from '../assets/game-logo.png';
 import tileset from '../assets/tileset.png';
@@ -86,6 +87,8 @@ export default class MenuScene extends Scene {
     this.input.keyboard.on('keyup-ENTER', () => {
       this.menuItems[this.selected].action();
     });
+
+    this.cameras.main.setPostPipeline(CRT);
   }
 
   update () {

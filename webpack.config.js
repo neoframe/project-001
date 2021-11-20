@@ -34,11 +34,11 @@ module.exports = {
         },
       ],
     }, {
-      test: /\.(jpg|jpeg|png|gif|xml)$/,
+      test: /\.(jpg|jpeg|png|gif|xml|ttf|eot|woff|woff2)$/,
       type: 'asset/resource',
     }, {
-      test: /\.(ttf|eot|woff|woff2)$/,
-      type: 'asset/resource',
+      test: /\.(glsl)$/,
+      type: 'asset/source',
     }],
   },
   plugins: [

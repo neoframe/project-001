@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 
 import { FONT } from '../utils/settings';
+import CRT from '../effects/crt.pipeline';
 
 export default class Settings extends Scene {
   static items = [
@@ -83,6 +84,8 @@ export default class Settings extends Scene {
     });
 
     this.height = this.container.getBounds().height;
+
+    this.cameras.main.setPostPipeline(CRT);
   }
 
   setItem (direction = 'next') {
